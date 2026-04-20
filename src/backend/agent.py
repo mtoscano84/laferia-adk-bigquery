@@ -16,13 +16,6 @@ os.environ['SSL_CERT_FILE'] = certifi.where()
 if "GOOGLE_GENAI_USE_VERTEXAI" in os.environ:
     del os.environ["GOOGLE_GENAI_USE_VERTEXAI"]
 
-# Check both standard and fallback env vars
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID") or "mtoscano-dev-sandbox"
-DATASET_ID = os.environ.get("BIGQUERY_DATASET", "feria_sevilla_2025")
-
-# Ensure project is set for default client behavior
-os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-
 from typing import List, Dict, Any, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -44,8 +37,12 @@ from google.adk.tools.bigquery import BigQueryToolset, BigQueryCredentialsConfig
 from google.adk.tools.bigquery.config import BigQueryToolConfig, WriteMode
 
 # --- Configuration ---
-PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "YOUR_PROJECT_ID")
-DATASET_ID = "feria_sevilla_2025"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID") or "mtoscano-dev-sandbox"
+DATASET_ID = os.environ.get("BIGQUERY_DATASET", "feria_sevilla_2025")
+
+# Ensure project is set for default client behavior
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+
 MODEL_ID = "gemini-3-flash-preview" # Standard foundational model
 
 app = FastAPI(title="Feria de Sevilla AI Assistant API")
@@ -149,21 +146,19 @@ def create_chart(query: str, title: str, chart_type: str = "bar") -> str:
         print(f"❌ [create_chart] Error: {str(e)}")
         return f"ERROR: Failed to generate chart: {str(e)}"
 
-SYSTEM_PROMPT = f"""
+SYSTEM_PROMPT = """
 You are 'Curro', an expert data analyst for the Feria de Sevilla. You help users understand operational insights and business intelligence regarding the event.
 
 You have access to first-party tools to explore and query BigQuery databases.
-Your project is `{PROJECT_ID}` and the dataset of focus is `{DATASET_ID}`.
-Always qualify tables with `{PROJECT_ID}.{DATASET_ID}.table_name`.
 
 Guidelines:
 1.  **Discover**: To answer a question, you might first need to discover what tables are available, or discover the schema of a table. Use tools like `list_table_ids` or `get_table_info` if you are unsure of the data structure.
 2.  **Query**: Once you know the schema, use the `execute_sql` tool to run optimized queries.
 3.  **Synthesize**: Provide a clear, human-readable summary of the data retrieved.
-4.  **Restrictions**: NEVER use the `search_catalog` tool. It is not supported in this environment. Use `list_table_ids` to discover tables in the `{DATASET_ID}` dataset.
+4.  **Restrictions**: NEVER use the `search_catalog` tool. It is not supported in this environment. Use `list_table_ids` to discover tables.
 5.  **Charts**: Use it only when the user explicitly asks for a chart, graph, or visual representation. Call the `create_chart` tool DIRECTLY with the SQL query. The tool supports `chart_type='bar'` and `chart_type='line'`. If your query returns a first column (X axis) and MULTIPLE subsequent columns, it will plot multiple lines or bars! Use this for advanced comparisons (e.g., evolution of all transport types over time). After calling it, you MUST include `![Chart](chart.png)` in your response so the user can see it.
 
-Focus only on the dataset `{DATASET_ID}`.
+Focus only on data related to the Feria de Sevilla.
 """
 
 # --- ADK Initialization ---
@@ -209,10 +204,6 @@ runner = Runner(
     app_name=APP_NAME,
     session_service=session_service
 )
-def get_bq_client():
-    if PROJECT_ID == "YOUR_PROJECT_ID":
-        return bigquery.Client()
-    return bigquery.Client(project=PROJECT_ID)
 
 # --- Tracing Setup (Placeholder or Actual if package exists) ---
 try:
@@ -241,28 +232,6 @@ except ImportError:
             return MockSpan()
     
     tracing = MockTracing()
-
-# --- First-Party BigQuery Tools (ADK Built-in) ---
-try:
-    # Try importing from the specific bigquery module as per GitHub README
-    from google.adk.tools.bigquery import BigQueryToolset
-    USE_FIRST_PARTY_TOOLS = True
-except ImportError:
-    try:
-        # Fallback to top-level tools
-        from google.adk.tools import BigQueryToolset
-        USE_FIRST_PARTY_TOOLS = True
-    except ImportError:
-        USE_FIRST_PARTY_TOOLS = False
-        print("⚠️ Warning: Could not import BigQueryToolset from anywhere.")
-
-# Define fallback or use if first-party tools fail to import in my environment
-if not USE_FIRST_PARTY_TOOLS:
-    # Mock BigQueryToolset or use original custom tool as fallback for local run
-    class BigQueryToolset:
-        def __init__(self, **kwargs):
-            pass
-        # We can simulate tools or just let it pass
     
 
 
@@ -285,12 +254,14 @@ async def chat_endpoint(message: Message):
         
         final_response = "No response from agent."
         for event in events:
+            print(f"🤖 [Agent Event]: {event}")
             if event.is_final_response():
                 final_response = event.content.parts[0].text
                 
         return ChatResponse(response=final_response)
 
     except Exception as e:
+         print(f"❌ [Agent Error]: {str(e)}")
          return ChatResponse(response=f"Error in agent processing: {str(e)}")
 
 # CLI running
