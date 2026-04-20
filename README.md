@@ -13,6 +13,25 @@ To run the application locally:
     ```
     This will create a virtual environment, install dependencies, and start both backend and frontend servers.
 
+## Data Setup (BigQuery)
+
+Before running or deploying the app, you need to create and populate the BigQuery dataset:
+
+1.  Ensure you are authenticated and have set your project ID:
+    ```bash
+    export PROJECT_ID="your-project-id"
+    gcloud config set project $PROJECT_ID
+    ```
+2.  Install the required Python packages (or run inside the `.venv` created by `./run_demo.sh`):
+    ```bash
+    pip install google-cloud-bigquery pandas db-dtypes
+    ```
+3.  Run the setup script:
+    ```bash
+    python3 src/backend/setup_bigquery.py
+    ```
+    This will create the `feria_sevilla_2025` dataset and populate it with simulated records.
+
 ## GCP Deployment (Cloud Run)
 
 Follow these instructions to deploy the application to Google Cloud Platform.
@@ -25,6 +44,15 @@ Follow these instructions to deploy the application to Google Cloud Platform.
 1.  A GCP Project with billing enabled.
 2.  If not using Cloud Shell, ensure you have the Google Cloud SDK and Docker installed locally.
 3.  BigQuery dataset `feria_sevilla_2025` populated with data (use `src/backend/setup_bigquery.py` to populate if needed).
+
+### Step 0: Clone the Repository
+
+If you are using Cloud Shell or a new local environment, clone the repository first:
+
+```bash
+git clone https://github.com/mtoscano84/laferia-adk-bigquery.git
+cd laferia-adk-bigquery
+```
 
 ### Step 1: Build and Push Docker Images
 
@@ -42,15 +70,14 @@ We will use Artifact Registry to store our Docker images.
 
 3.  Build and push the **Backend** image:
     ```bash
-    docker build -t us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/backend -f src/backend/Dockerfile .
-    docker push us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/backend
+    docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/backend -f src/backend/Dockerfile .
+    docker push us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/backend
     ```
-    *(Replace `[PROJECT_ID]` with your actual GCP Project ID)*
 
 4.  Build and push the **Frontend** image:
     ```bash
-    docker build -t us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/frontend -f src/frontend/Dockerfile .
-    docker push us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/frontend
+    docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/frontend -f src/frontend/Dockerfile .
+    docker push us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/frontend
     ```
 
 ### Step 2: Deploy Backend to Cloud Run
@@ -58,11 +85,11 @@ We will use Artifact Registry to store our Docker images.
 1.  Deploy the backend container:
     ```bash
     gcloud run deploy feria-backend \
-      --image us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/backend \
+      --image us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/backend \
       --platform managed \
       --region us-central1 \
       --allow-unauthenticated \
-      --set-env-vars GEMINI_API_KEY=[YOUR_GEMINI_API_KEY],GOOGLE_CLOUD_PROJECT=[PROJECT_ID],BIGQUERY_DATASET=feria_sevilla_2025
+      --set-env-vars GEMINI_API_KEY=[YOUR_GEMINI_API_KEY],GOOGLE_CLOUD_PROJECT=$PROJECT_ID,BIGQUERY_DATASET=feria_sevilla_2025
     ```
 2.  **Note the Service URL** returned by this command. It will look like `https://feria-backend-xxxxxx-uc.a.run.app`. This is your `BACKEND_URL`.
 
@@ -71,7 +98,7 @@ We will use Artifact Registry to store our Docker images.
 1.  Deploy the frontend container, passing the Backend URL:
     ```bash
     gcloud run deploy feria-frontend \
-      --image us-central1-docker.pkg.dev/[PROJECT_ID]/feria-repo/frontend \
+      --image us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/frontend \
       --platform managed \
       --region us-central1 \
       --allow-unauthenticated \
