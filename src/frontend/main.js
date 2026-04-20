@@ -69,7 +69,15 @@ function appendMessage(text, className) {
         
         // Replace newlines and render images
         let html = text.replace(/\n/g, '<br>');
-        html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">');
+        
+        // Extract base backend URL (without /api/chat)
+        const backendBaseUrl = BACKEND_URL.replace('/api/chat', '');
+        
+        // Handle markdown images
+        html = html.replace(/!\[(.*?)\]\((.*?)\)/g, `<img src="${backendBaseUrl}/api/$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`);
+        
+        // Handle raw HTML images if agent generated them
+        html = html.replace(/src=["']chart\.png["']/g, `src="${backendBaseUrl}/api/chart.png"`);
         
         p.innerHTML = html;
         contentDiv.appendChild(p);
