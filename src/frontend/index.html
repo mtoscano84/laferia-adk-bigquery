@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feria en Datos - Asistente Inteligente</title>
+    <meta name="description" content="Asistente de Inteligencia Artificial para la Feria de Sevilla 2026. Consulta afluencia, transporte e impacto económico.">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+    <!-- Homepage Overlay -->
+    <div id="homepage" class="homepage-overlay">
+        <div class="homepage-content">
+            <img src="cartel_feria_2025.jpeg" alt="Cartel Feria 2025" class="cartel-img">
+            <button id="start-chat-btn" class="start-btn">Entrar al Asistente</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar or Header Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">🎪</span>
+                <div class="logo-text">
+                    <h1>Feria en Datos</h1>
+                    <p>Asistente Inteligente Feria de Sevilla 2025</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot online"></span>
+                <span>Curro Conectado</span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="chat-container">
+            <div class="chat-history" id="chat-history">
+                <div class="message system-message">
+                    <div class="message-content">
+                        <p>¡Hola! Soy <strong>Curro</strong>, tu analista experto de la Feria de Sevilla. Puedes preguntarme sobre la afluencia de casetas, el uso del transporte público o el impacto económico. ¿En qué te ayudo hoy?</p>
+                    </div>
+                </div>
+                
+                <!-- Chat Bubbles will appear here dynamically -->
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <p>Prueba con una pregunta como: <em>"¿Cuánta gente visitó casetas públicas ayer?"</em> o <em>"¿Cuál fue la hora punta del metro?"</em>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <footer class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Pregunta sobre la Feria (ej: Afluencia de ayer)..." autofocus autocomplete="off">
+                    <button id="send-btn" class="send-btn" aria-label="Enviar pregunta">
+                        <span class="btn-text">Enviar</span>
+                        <span class="btn-icon">🚀</span>
+                    </button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Main Logic -->
+    <script src="main.js?v=2"></script>
+</body>
+</html>
