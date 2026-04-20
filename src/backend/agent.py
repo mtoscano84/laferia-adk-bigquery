@@ -16,7 +16,8 @@ os.environ['SSL_CERT_FILE'] = certifi.where()
 if "GOOGLE_GENAI_USE_VERTEXAI" in os.environ:
     del os.environ["GOOGLE_GENAI_USE_VERTEXAI"]
 
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "mtoscano-dev-sandbox")
+# Check both standard and fallback env vars
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("PROJECT_ID") or "mtoscano-dev-sandbox"
 DATASET_ID = os.environ.get("BIGQUERY_DATASET", "feria_sevilla_2025")
 
 # Ensure project is set for default client behavior
