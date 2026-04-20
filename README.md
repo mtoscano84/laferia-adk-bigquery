@@ -1,8 +1,28 @@
-# Feria de Sevilla AI Agent - GCP Deployment Guide
+# Feria de Sevilla Data Agent
 
-This repository contains an AI agent application for analyzing Feria de Sevilla data, integrated with BigQuery and deployed on Cloud Run.
+This project demonstrates an AI data agent for analyzing Feria de Sevilla data.
 
-## Step 1: Clone the Repository
+**Key Features & Stack:**
+*   **Framework**: Google's Agent Development Kit (ADK).
+*   **Data Source**: Google Cloud BigQuery.
+*   **Pre-built Tools**: Uses ADK's pre-built BigQuery tools, so the agent can query data without manual SQL creation.
+*   **Architecture**: Python backend agent and a simple web frontend.
+*   **Deployment**: Both components are containerized and ready for deployment on Google Cloud Run.
+
+## Typical Prompts
+
+Here are some example questions you can ask the agent:
+
+*   "What information do we have available in the feria dataset and how are the tables structured?"
+*   "Which 'private' type caseta had the most total visitors and how many were there?"
+*   "Do the hours of highest attendance in the casetas coincide with the hours of the highest number of passengers in the Metro (Line L1)? Compare the peaks of both."
+*   "How did the rain affect the attendance of the casetas and the use of taxis compared to sunny days?"
+*   "Can you create a line chart showing the daily evolution of total visitors compared to the average temperature of each day?"
+*   "Based on that chart, do you think the heat affected the visits?"
+
+## Deployment Guide
+
+### Step 1: Clone the Repository
 
 Whether you are running locally or in Google Cloud Shell, the first step is to clone the repository to get the source files:
 
@@ -11,7 +31,7 @@ git clone https://github.com/mtoscano84/laferia-adk-bigquery.git
 cd laferia-adk-bigquery
 ```
 
-## Prerequisites
+### Prerequisites
 
 Before you begin, make sure you have:
 
@@ -22,7 +42,7 @@ Before you begin, make sure you have:
     *   Click on **Get API key** and create a new key.
     *   Save this key securely; you will need it to run the agent.
 
-## Step 2: Data Setup (BigQuery)
+### Step 2: Data Setup (BigQuery)
 
 Before running or deploying the app, you need to create and populate the BigQuery dataset with the simulated data:
 
@@ -41,7 +61,7 @@ Before running or deploying the app, you need to create and populate the BigQuer
     ```
     This will create the `feria_sevilla_2025` dataset and populate it with records.
 
-## Option A: Local Development
+### Option A: Local Development
 
 To run the application locally on your machine:
 
@@ -52,19 +72,14 @@ To run the application locally on your machine:
     ```
     This will create a virtual environment, install dependencies, copy assets, and start both backend and frontend servers.
 
-## Option B: GCP Deployment (Cloud Run)
+### Option B: GCP Deployment (Cloud Run)
 
 Follow these instructions to deploy the application to Google Cloud Platform.
 
 > [!TIP]
 > **Recommended**: Use **Google Cloud Shell** to run these commands. It comes pre-installed with `gcloud`, `docker`, and `git`, and is already authenticated to your GCP project.
 
-### Prerequisites
-
-1.  A GCP Project with billing enabled.
-2.  If not using Cloud Shell, ensure you have the Google Cloud SDK and Docker installed locally.
-
-### 1. Build and Push Docker Images
+#### 1. Build and Push Docker Images
 
 We will use Artifact Registry to store our Docker images.
 
@@ -90,7 +105,7 @@ We will use Artifact Registry to store our Docker images.
     docker push us-central1-docker.pkg.dev/$PROJECT_ID/feria-repo/frontend
     ```
 
-### 2. Deploy Backend to Cloud Run
+#### 2. Deploy Backend to Cloud Run
 
 1.  Deploy the backend container:
     ```bash
@@ -103,7 +118,7 @@ We will use Artifact Registry to store our Docker images.
     ```
 2.  **Note the Service URL** returned by this command. It will look like `https://feria-backend-xxxxxx-uc.a.run.app`. This is your `BACKEND_URL`.
 
-### 3. Deploy Frontend to Cloud Run
+#### 3. Deploy Frontend to Cloud Run
 
 1.  Deploy the frontend container, passing the Backend URL:
     ```bash
@@ -116,7 +131,7 @@ We will use Artifact Registry to store our Docker images.
     ```
     *(Replace with your actual backend URL noted in Step 2)*
 
-### 4. IAM Permissions
+#### 4. IAM Permissions
 
 For the agent to query BigQuery, the Cloud Run service account must have permission. By default, Cloud Run uses the default compute service account.
 
@@ -162,3 +177,4 @@ To fix this:
     *   Search for the policy: `constraints/iam.allowedPolicyMemberDomains` (Domain Restricted Sharing).
     *   Edit the policy and set it to **Off** or remove the constraint.
     *   Run the `gcloud` command above again.
+```
