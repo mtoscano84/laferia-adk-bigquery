@@ -1,6 +1,6 @@
 // Configuration
 // Placeholder __BACKEND_URL__ will be replaced during Docker deployment
-const BACKEND_URL = '__BACKEND_URL__' === '__BACKEND_URL__' ? 'http://127.0.0.1:8000/api/chat' : '__BACKEND_URL__';
+const BACKEND_URL = '__BACKEND_URL__'.startsWith('http') ? '__BACKEND_URL__' : 'http://127.0.0.1:8000/api/chat';
 
 // DOM Elements
 const chatHistory = document.getElementById('chat-history');
